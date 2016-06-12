@@ -13,6 +13,8 @@
 #include "img_balls.h"
 #include "utils/ustdlib.h"
 
+#include "Labs/labs.h"
+
 tContext sContext;
 tRectangle sRect;
 unsigned char idx = 0;
@@ -46,6 +48,9 @@ int main(void)
 	   SysCtlDelay(800000);
 	   GrContextForegroundSet(&sContext, ClrBlack);
 	   GrStringDraw(&sContext, str, -1, 170, 30, 0);
+
+	   //vRunLab03();
+	   //vRunLab04();
    }
 
 }
