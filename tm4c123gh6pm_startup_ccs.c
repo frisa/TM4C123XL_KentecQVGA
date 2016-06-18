@@ -23,6 +23,7 @@
 //*****************************************************************************
 
 #include <stdint.h>
+#include "Labs/labs.h"
 
 //*****************************************************************************
 //
@@ -40,7 +41,7 @@ static void IntDefaultHandler(void);
 // processor is started
 //
 //*****************************************************************************
-extern void _c_int00(void);
+extern void _c_int002(void);
 
 //*****************************************************************************
 //
@@ -102,7 +103,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // ADC Sequence 2
     IntDefaultHandler,                      // ADC Sequence 3
     IntDefaultHandler,                      // Watchdog timer
-    IntDefaultHandler,                      // Timer 0 subtimer A
+	Lab04_Timer0IntHandler,                      // Timer 0 subtimer A
     IntDefaultHandler,                      // Timer 0 subtimer B
     IntDefaultHandler,                      // Timer 1 subtimer A
     IntDefaultHandler,                      // Timer 1 subtimer B
@@ -241,8 +242,8 @@ ResetISR(void)
     // Jump to the CCS C initialization routine.  This will enable the
     // floating-point unit as well, so that does not need to be done here.
     //
-    __asm("    .global _c_int00\n"
-          "    b.w     _c_int00");
+    __asm("    .global _c_int002\n"
+          "    b.w     _c_int002");
 }
 
 //*****************************************************************************
