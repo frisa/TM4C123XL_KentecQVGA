@@ -12,74 +12,132 @@
 #include "Kentec320x240x16_SSD2119_SPI.h"
 #include "img_balls.h"
 #include "utils/ustdlib.h"
-
 #include "Labs/labs.h"
 
-tContext sContext;
-tRectangle sRect;
-unsigned char idx = 0;
-char str[10];
+void printDisp(char* format,...);
+char *convert(unsigned int num, int base);
+void putchar(char u8Char);
+void puts(char * pu8Char);
 
-void gpxPrint(char * pui8String)
+void printDisp(char* format,...)
 {
+    char *traverse;
+    int i;
+    char *s;
 
+    va_list arg;
+    va_start(arg, format);
+    traverse = format;
+
+    while ('\0' != *traverse)
+    {
+        if ('%' == *traverse)
+        {
+        	traverse++;
+        	switch(*traverse)
+        	        {
+        	            case 'c' : i = va_arg(arg,int);
+        	                        putchar(i);
+        	                        break;
+        	            case 'd' : i = va_arg(arg,int);
+        	                        if(i<0)
+        	                        {
+        	                            i = -i;
+        	                            putchar('-');
+        	                        }
+        	                        puts(convert(i,10));
+        	                        break;
+        	            case 'o': i = va_arg(arg,unsigned int);
+        	                        puts(convert(i,8));
+        	                        break;
+        	            case 's': s = va_arg(arg,char *);
+        	                        puts(s);
+        	                        break;
+        	            case 'x': i = va_arg(arg,unsigned int);
+        	                        puts("0x");
+        	                        puts(convert(i,16));
+        	                        break;
+        	        }
+        }
+        else
+        {
+        	putchar(*traverse);
+        }
+        traverse++;
+    }
+    va_end(arg);
 }
 
+char *convert(unsigned int num, int base)
+{
+    static char Representation[]= "0123456789ABCDEF";
+    static char buffer[50];
+    char *ptr;
+
+    ptr = &buffer[49];
+    *ptr = '\0';
+
+    do
+    {
+        *--ptr = Representation[num%base];
+        num /= base;
+    }while(num != 0);
+
+    return(ptr);
+}
+
+void puts(char * pu8Char)
+{
+	while('\0' != *pu8Char)
+	{
+		putchar(*pu8Char);
+		pu8Char++;
+	}
+}
+
+void putchar(char u8Char)
+{
+	static tContext sContext;
+	static tRectangle sRect;
+	static uint32_t u32CurrentX = 0;
+	static uint32_t u32CurrentY = 0;
+	if (NULL == sContext.psDisplay)
+	{
+		Kentec320x240x16_SSD2119Init();
+		GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
+		GrContextFontSet(&sContext, &g_sFontCm12);
+	}
+	if ('\n' == u8Char)
+	{
+		GrFlush(&sContext);
+		u32CurrentX = 0;
+		u32CurrentY = u32CurrentY + 15;
+		if (240 < u32CurrentY)
+		{
+			u32CurrentY = 0;
+		}
+	}
+	else
+	{
+		sRect.i16XMin = u32CurrentX;
+		sRect.i16YMin = u32CurrentY;
+		sRect.i16XMax = u32CurrentX + 10;
+		sRect.i16YMax = u32CurrentY + 15;
+		GrContextForegroundSet(&sContext, ClrBlack);
+		GrRectFill(&sContext, &sRect);
+		GrContextForegroundSet(&sContext, ClrWhite);
+		GrStringDraw(&sContext, &u8Char, -1, u32CurrentX, u32CurrentY, 0);
+		u32CurrentX = u32CurrentX + 10;
+	}
+}
 
 int main(void)
 {
-   uint32_t ui32TempC, ui32TempCOld;
-   char piu8TempCStr[10], piu8TempCOldStr[10];
-
    SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
-   Kentec320x240x16_SSD2119Init();
-   GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
 
-   sRect.i16XMin = 0;
-   sRect.i16YMin = 0;
-   sRect.i16XMax = GrContextDpyWidthGet(&sContext) - 1;
-   sRect.i16YMax = 23;
-   GrContextForegroundSet(&sContext, ClrDarkBlue);
-   GrRectFill(&sContext, &sRect);
-   GrContextForegroundSet(&sContext, ClrWhite);
-   GrRectDraw(&sContext, &sRect);
-   GrContextFontSet(&sContext, &g_sFontCm20);
-   GrStringDrawCentered(&sContext, "Testovaci aplikace", -1, GrContextDpyWidthGet(&sContext) / 2, 8, 0);
-   GrStringDraw(&sContext, "Idx:", -1, 0, 30, 0);
-   GrStringDraw(&sContext, "Temp:", -1, 80, 30, 0);
-   GrFlush(&sContext);
-
-   /* initialization of the meassurement of processor temperature from lab5*/
-   vMeassureIntTemperatureInit();
-
-   while(1)
-   {
-	   /* clear the context */
-	   GrContextForegroundSet(&sContext, ClrBlack);
-	   GrStringDraw(&sContext, str, -1, 40, 30, 0);
-
-	   vMeassureIntTemperature(&ui32TempC);
-	   if (ui32TempC != ui32TempCOld)
-	   {
-		   usprintf(piu8TempCOldStr,"%d", ui32TempCOld);
-		   GrContextForegroundSet(&sContext, ClrBlack);
-		   GrStringDraw(&sContext, piu8TempCOldStr, -1, 140, 30, 0);
-
-		   usprintf(piu8TempCStr,"%d", ui32TempC);
-		   GrContextForegroundSet(&sContext, ClrWhite);
-		   GrStringDraw(&sContext, piu8TempCStr, -1, 140, 30, 0);
-		   ui32TempCOld = ui32TempC;
-	   }
-
-	   /* show the context */
-	   GrContextForegroundSet(&sContext, ClrWhite);
-	   usprintf(str,"%d", ++idx);
-	   GrStringDraw(&sContext, str, -1, 40, 30, 0);
-	   SysCtlDelay(800000);
-
-	   //vRunLab03();
-	   //vRunLab04();
-	   //vRunLab05();
-   }
+   printDisp("Decimalni cislo [%d] \n", 16);
+   printDisp("Hexadesimalni cislo [%x] \n", 235);
+   //vRunLab03();
+   //vRunLab04();
 
 }
