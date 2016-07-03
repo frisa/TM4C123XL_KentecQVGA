@@ -21,69 +21,69 @@ void puts(char * pu8Char);
 
 void printDisp(char* format,...)
 {
-    char *traverse;
-    int i;
-    char *s;
+	char *traverse;
+	int i;
+	char *s;
 
-    va_list arg;
-    va_start(arg, format);
-    traverse = format;
+	va_list arg;
+	va_start(arg, format);
+	traverse = format;
 
-    while ('\0' != *traverse)
-    {
-        if ('%' == *traverse)
-        {
-        	traverse++;
-        	switch(*traverse)
-        	        {
-        	            case 'c' : i = va_arg(arg,int);
-        	                        putchar(i);
-        	                        break;
-        	            case 'd' : i = va_arg(arg,int);
-        	                        if(i<0)
-        	                        {
-        	                            i = -i;
-        	                            putchar('-');
-        	                        }
-        	                        puts(convert(i,10));
-        	                        break;
-        	            case 'o': i = va_arg(arg,unsigned int);
-        	                        puts(convert(i,8));
-        	                        break;
-        	            case 's': s = va_arg(arg,char *);
-        	                        puts(s);
-        	                        break;
-        	            case 'x': i = va_arg(arg,unsigned int);
-        	                        puts("0x");
-        	                        puts(convert(i,16));
-        	                        break;
-        	        }
-        }
-        else
-        {
-        	putchar(*traverse);
-        }
-        traverse++;
-    }
-    va_end(arg);
+	while ('\0' != *traverse)
+	{
+		if ('%' == *traverse)
+		{
+			traverse++;
+			switch(*traverse)
+			{
+				case 'c' : i = va_arg(arg,int);
+				putchar(i);
+				break;
+				case 'd' : i = va_arg(arg,int);
+				if(i<0)
+				{
+					i = -i;
+					putchar('-');
+				}
+				puts(convert(i,10));
+				break;
+				case 'o': i = va_arg(arg,unsigned int);
+				puts(convert(i,8));
+				break;
+				case 's': s = va_arg(arg,char *);
+				puts(s);
+				break;
+				case 'x': i = va_arg(arg,unsigned int);
+				puts("0x");
+				puts(convert(i,16));
+				break;
+			}
+		}
+		else
+		{
+			putchar(*traverse);
+		}
+		traverse++;
+	}
+	va_end(arg);
 }
 
 char *convert(unsigned int num, int base)
 {
-    static char Representation[]= "0123456789ABCDEF";
-    static char buffer[50];
-    char *ptr;
+	static char Representation[]= "0123456789ABCDEF";
+	static char buffer[50];
+	char *ptr;
 
-    ptr = &buffer[49];
-    *ptr = '\0';
+	ptr = &buffer[49];
+	*ptr = '\0';
 
-    do
-    {
-        *--ptr = Representation[num%base];
-        num /= base;
-    }while(num != 0);
+	do
+	{
+		*--ptr = Representation[num%base];
+		num /= base;
+	}while(num != 0);
 
-    return(ptr);
+	return(ptr);
 }
 
 void puts(char * pu8Char)
@@ -133,11 +133,21 @@ void putchar(char u8Char)
 
 int main(void)
 {
-   SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
+	uint32_t u32CurrTemp =0;
 
-   printDisp("Decimalni cislo [%d] \n", 16);
-   printDisp("Hexadesimalni cislo [%x] \n", 235);
-   //vRunLab03();
-   //vRunLab04();
+	SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
+	vMeassureIntTemperatureInit();
+
+	printDisp("Start aplikace\n");
+	vMeassureIntTemperature(&u32CurrTemp);
+	printDisp("Aktualni teplota %d C\n", u32CurrTemp);
+	//vRunLab03();
+	//vRunLab04();
+	while (true)
+	{
+
+
+
+	}
 
 }
